@@ -3,12 +3,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copiar el archivo del proyecto y restaurar dependencias
-COPY ["AmbustockBackend/AmbustockBackend.csproj", "AmbustockBackend/"]
-RUN dotnet restore "AmbustockBackend/AmbustockBackend.csproj"
+COPY ["AmbustockBackend.csproj", "./"]
+RUN dotnet restore "AmbustockBackend.csproj"
 
 # Copiar el resto del código y compilar
-COPY AmbustockBackend/. AmbustockBackend/
-WORKDIR "/src/AmbustockBackend"
+COPY . .
 RUN dotnet build "AmbustockBackend.csproj" -c Release -o /app/build
 
 # Etapa de publicación

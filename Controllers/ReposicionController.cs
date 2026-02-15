@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AmbustockBackend.Services;
 using AmbustockBackend.Dtos;
+using AmbustockBackend.Service;
 
 namespace AmbustockBackend.Controllers
 {

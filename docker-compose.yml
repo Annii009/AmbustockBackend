@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: ambustock-sqlserver-dev
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssw0rd2025!
+      - MSSQL_PID=Developer
+    ports:
+      - "8308:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./SqlServer:/sql-scripts:ro
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd2025!' -C -Q 'SELECT 1' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  init-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: ambustock-init-db-dev
+    volumes:
+      - ./SqlServer:/sql-scripts:ro
+    user: root
+    entrypoint: /bin/bash
+    command: >
+      -c "
+        until /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'P@ssw0rd2025!' -C -Q 'SELECT 1' &>/dev/null; do
+          sleep 2;
+        done;
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'P@ssw0rd2025!' -C -i /sql-scripts/init-db.sql;
+      "
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ambustock-backend-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__CadenaConexionAmbustock=Server=sqlserver,1433;Database=AmbustockDB;User Id=sa;Password=P@ssw0rd2025!;TrustServerCertificate=True;Encrypt=False
+    ports:
+      - "5002:8080"
+    depends_on:
+      init-db:
+        condition: service_completed_successfully
+    restart: on-failure
+
+volumes:
+  sqlserver_data:
