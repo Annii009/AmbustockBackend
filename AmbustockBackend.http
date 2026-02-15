@@ -1,0 +1,6 @@
+@AmbustockBackend_HostAddress = http://localhost:5021
+
+GET {{AmbustockBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
