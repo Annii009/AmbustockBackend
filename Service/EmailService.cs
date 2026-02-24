@@ -2,62 +2,74 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using AmbustockBackend.Models;
-using AmbustockBackend.Repositories;
+using AmbustockBackend.Data;
 
 namespace AmbustockBackend.Service
 {
-    public interface IEmailService
-    {
-        Task EnviarCorreoReposicionCompletadaAsync(Reposicion reposicion);
-    }
-
-    public class EmailService : IEmailService
+    public class EmailService
     {
         private readonly EmailSettings _emailSettings;
-        private readonly IUsuarioRepository _usuariosRepository;
+        private readonly AmbustockContext _context;
         private readonly ILogger<EmailService> _logger;
 
         public EmailService(
             IOptions<EmailSettings> emailSettings,
-            IUsuarioRepository usuariosRepository,
+            AmbustockContext context,
             ILogger<EmailService> logger)
         {
             _emailSettings = emailSettings.Value;
-            _usuariosRepository = usuariosRepository;
+            _context = context;
             _logger = logger;
         }
 
-        public async Task EnviarCorreoReposicionCompletadaAsync(Reposicion reposicion)
+        public async Task EnviarCorreoReposicionAsync(int idCorreo, Reposicion reposicion, List<string>? fotosBase64 = null)
         {
             try
             {
-                var admins = await _usuariosRepository.GetByRolAsync("Admin");
-                var adminEmails = admins
-                    .Where(u => !string.IsNullOrEmpty(u.Email))
-                    .Select(u => u.Email)
-                    .ToList();
+                var correo = await _context.Correos
+                    .Include(c => c.Usuarios)
+                    .Include(c => c.Materiales)
+                    .FirstOrDefaultAsync(c => c.IdCorreo == idCorreo);
 
-                if (!adminEmails.Any())
+                if (correo?.Usuarios == null || string.IsNullOrEmpty(correo.Usuarios.Email))
                 {
-                    _logger.LogWarning("No se encontraron administradores con email configurado");
+                    _logger.LogWarning($"No se encontró usuario o email para IdCorreo: {idCorreo}");
                     return;
                 }
 
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
-                
-                foreach (var email in adminEmails)
-                {
-                    message.To.Add(MailboxAddress.Parse(email));
-                }
+                message.To.Add(MailboxAddress.Parse(correo.Usuarios.Email));
+                message.Subject = $"Nueva reposición registrada - {reposicion.NombreMaterial}";
 
-                message.Subject = $"✅ Reposición Completada - {reposicion.NombreMaterial}";
+                var fotoCids = new List<string>();
+                if (fotosBase64 != null)
+                {
+                    for (int i = 0; i < fotosBase64.Count; i++)
+                        fotoCids.Add($"foto{i}@ambustock");
+                }
 
                 var bodyBuilder = new BodyBuilder
                 {
-                    HtmlBody = GenerarHtmlCorreo(reposicion)
+                    HtmlBody = GenerarHtml(correo, reposicion, fotoCids)
                 };
+
+                if (fotosBase64 != null)
+                {
+                    for (int i = 0; i < fotosBase64.Count; i++)
+                    {
+                        var bytes = Convert.FromBase64String(fotosBase64[i]);
+                        var imagen = bodyBuilder.LinkedResources.Add(
+                            $"foto{i}.jpg",
+                            bytes,
+                            new MimeKit.ContentType("image", "jpeg")
+                        );
+                        imagen.ContentId = fotoCids[i];
+                        imagen.ContentDisposition = new MimeKit.ContentDisposition(MimeKit.ContentDisposition.Inline);
+                    }
+                }
 
                 message.Body = bodyBuilder.ToMessageBody();
 
@@ -67,66 +79,84 @@ namespace AmbustockBackend.Service
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
 
-                _logger.LogInformation($"Correo de reposición enviado exitosamente. ID: {reposicion.IdReposicion}");
+                _logger.LogInformation($"Email enviado a {correo.Usuarios.Email} — IdCorreo: {idCorreo}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error al enviar correo de reposición. ID: {reposicion.IdReposicion}");
+                _logger.LogError(ex, $"Error al enviar email — IdCorreo: {idCorreo}");
             }
         }
 
-        private string GenerarHtmlCorreo(Reposicion reposicion)
+
+        private string GenerarHtml(Correo correo, Reposicion reposicion, List<string> fotoCids)
         {
+            var fotosHtml = "";
+            if (fotoCids.Count > 0)
+            {
+                var imgs = string.Join("", fotoCids.Select(cid => $@"
+            <img src='cid:{cid}' 
+                 style='max-width:100%;border-radius:8px;margin:8px 0;display:block;' />"));
+
+                fotosHtml = $@"
+            <div class='info-box'>
+                <p class='label'>Fotos de evidencia ({fotoCids.Count}):</p>
+                {imgs}
+            </div>";
+            }
+
             return $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .info-box {{ background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
-        .label {{ font-weight: bold; color: #667eea; }}
-        .value {{ color: #333; margin-bottom: 10px; }}
-        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Reposición Completada</h1>
-            <p>AmbuStock - Sistema de Gestión</p>
-        </div>
-        <div class='content'>
-            <div class='info-box'>
-                <p class='label'>Material:</p>
-                <p class='value'>{reposicion.NombreMaterial ?? "N/A"}</p>
-                
-                <p class='label'>Cantidad:</p>
-                <p class='value'>{reposicion.Cantidad ?? 0} unidades</p>
-                
-                <p class='label'>Fecha:</p>
-                <p class='value'>{DateTime.Now:dd/MM/yyyy HH:mm}</p>
-            </div>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #c0392b, #8e1a11); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+                    .info-box {{ background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    .label {{ font-weight: bold; color: #c0392b; margin-bottom: 4px; }}
+                    .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>Nueva Reposición Registrada</h1>
+                        <p>AmbuStock - Sistema de Gestión</p>
+                    </div>
+                    <div class='content'>
+                        <div class='info-box'>
+                            <p class='label'>Responsable:</p>
+                            <p>{correo.Usuarios?.NombreUsuario ?? "N/A"}</p>
 
-            {(!string.IsNullOrEmpty(reposicion.Comentarios) ? $@"
-            <div class='info-box'>
-                <p class='label'>Comentarios:</p>
-                <p class='value'>{reposicion.Comentarios}</p>
-            </div>" : "")}
+                            <p class='label'>Material:</p>
+                            <p>{reposicion.NombreMaterial ?? "N/A"}</p>
 
-            <p style='text-align: center; margin-top: 20px;'>
-                Por favor, revisa el sistema para más detalles.
-            </p>
-        </div>
-        <div class='footer'>
-            <p>Este es un correo automático, por favor no responder.</p>
-            <p>AmbuStock &copy; {DateTime.Now.Year}</p>
-        </div>
-    </div>
-</body>
-</html>";
+                            <p class='label'>Cantidad:</p>
+                            <p>{reposicion.Cantidad ?? 0} unidades</p>
+
+                            <p class='label'>Tipo de problema:</p>
+                            <p>{correo.TipoProblema ?? "N/A"}</p>
+
+                            <p class='label'>Fecha:</p>
+                            <p>{DateTime.Now:dd/MM/yyyy HH:mm}</p>
+
+                            {(string.IsNullOrEmpty(reposicion.Comentarios) ? "" : $@"
+                            <p class='label'>Comentarios:</p>
+                            <p>{reposicion.Comentarios}</p>")}
+                        </div>
+                        {fotosHtml}
+                        <p style='text-align:center;margin-top:20px;'>
+                            Accede al sistema para gestionar la reposición.
+                        </p>
+                    </div>
+                    <div class='footer'>
+                        <p>Correo automático — no responder.</p>
+                        <p>AmbuStock &copy; {DateTime.Now.Year}</p>
+                    </div>
+                </div>
+            </body>
+            </html>";
         }
     }
 }
