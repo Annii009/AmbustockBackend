@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using System.Data;
 using AmbustockBackend.Models;
 
 namespace AmbustockBackend.Repositories
@@ -92,7 +93,8 @@ namespace AmbustockBackend.Repositories
             command.Parameters.AddWithValue("@NombreMaterial", (object)reposicion.NombreMaterial ?? DBNull.Value);
             command.Parameters.AddWithValue("@Cantidad", (object)reposicion.Cantidad ?? DBNull.Value);
             command.Parameters.AddWithValue("@Comentarios", (object)reposicion.Comentarios ?? DBNull.Value);
-            command.Parameters.AddWithValue("@FotoEvidencia", (object)reposicion.FotoEvidencia ?? DBNull.Value);
+            command.Parameters.Add("@FotoEvidencia", SqlDbType.VarBinary).Value =
+                (object?)reposicion.FotoEvidencia ?? DBNull.Value;
 
             var id = (int)await command.ExecuteScalarAsync();
             reposicion.IdReposicion = id;
@@ -120,7 +122,8 @@ namespace AmbustockBackend.Repositories
             command.Parameters.AddWithValue("@NombreMaterial", (object)reposicion.NombreMaterial ?? DBNull.Value);
             command.Parameters.AddWithValue("@Cantidad", (object)reposicion.Cantidad ?? DBNull.Value);
             command.Parameters.AddWithValue("@Comentarios", (object)reposicion.Comentarios ?? DBNull.Value);
-            command.Parameters.AddWithValue("@FotoEvidencia", (object)reposicion.FotoEvidencia ?? DBNull.Value);
+            command.Parameters.Add("@FotoEvidencia", SqlDbType.VarBinary).Value =
+                (object?)reposicion.FotoEvidencia ?? DBNull.Value;
 
             await command.ExecuteNonQueryAsync();
         }

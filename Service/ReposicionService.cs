@@ -1,23 +1,27 @@
 using AmbustockBackend.Repositories;
 using AmbustockBackend.Dtos;
 using AmbustockBackend.Models;
-using AmbustockBackend.Service;
+using AmbustockBackend.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace AmbustockBackend.Service
 {
     public class ReposicionService
     {
         private readonly IReposicionRepository _repository;
-        private readonly IEmailService _emailService;
+        private readonly EmailService _emailService;
+        private readonly AmbustockContext _context;
         private readonly ILogger<ReposicionService> _logger;
 
         public ReposicionService(
             IReposicionRepository repository,
-            IEmailService emailService,
+            EmailService emailService,
+            AmbustockContext context,
             ILogger<ReposicionService> logger)
         {
             _repository = repository;
             _emailService = emailService;
+            _context = context;
             _logger = logger;
         }
 
@@ -68,23 +72,37 @@ namespace AmbustockBackend.Service
 
         public async Task<ReposicionDto> CreateAsync(CreateReposicionDto dto)
         {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.NombreUsuario == dto.NombreResponsable);
+
+            if (usuario == null)
+                throw new Exception($"No se encontró usuario con nombre: {dto.NombreResponsable}");
+
+            var correo = new Correo
+            {
+                FechaAlerta = DateTime.Now,
+                TipoProblema = "Material gastado en servicio",
+                IdUsuario = usuario.IdUsuario
+            };
+            _context.Correos.Add(correo);
+            await _context.SaveChangesAsync();
+
             var reposicion = new Reposicion
             {
-                IdCorreo = dto.IdCorreo,
-                NombreMaterial = dto.NombreMaterial,
+                IdCorreo = correo.IdCorreo,
+                NombreMaterial = string.Join(", ", dto.NombresMateriales),
                 Cantidad = dto.Cantidad,
                 Comentarios = dto.Comentarios,
-                FotoEvidencia = !string.IsNullOrEmpty(dto.FotoEvidenciaBase64) 
-                    ? Convert.FromBase64String(dto.FotoEvidenciaBase64) 
+                FotoEvidencia = dto.FotosBase64 != null && dto.FotosBase64.Count > 0
+                    ? Convert.FromBase64String(dto.FotosBase64[0])
                     : null
             };
 
             var created = await _repository.AddAsync(reposicion);
 
-            // 👇 NUEVO: Enviar email al admin
             try
             {
-                await _emailService.EnviarCorreoReposicionCompletadaAsync(created);
+                await _emailService.EnviarCorreoReposicionAsync(correo.IdCorreo, created, dto.FotosBase64);
             }
             catch (Exception ex)
             {
@@ -112,8 +130,8 @@ namespace AmbustockBackend.Service
             reposicion.NombreMaterial = dto.NombreMaterial;
             reposicion.Cantidad = dto.Cantidad;
             reposicion.Comentarios = dto.Comentarios;
-            reposicion.FotoEvidencia = !string.IsNullOrEmpty(dto.FotoEvidenciaBase64) 
-                ? Convert.FromBase64String(dto.FotoEvidenciaBase64) 
+            reposicion.FotoEvidencia = !string.IsNullOrEmpty(dto.FotoEvidenciaBase64)
+                ? Convert.FromBase64String(dto.FotoEvidenciaBase64)
                 : null;
 
             await _repository.UpdateAsync(reposicion);

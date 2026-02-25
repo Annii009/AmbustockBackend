@@ -1,8 +1,10 @@
+using AmbustockBackend.Data;
 using AmbustockBackend.Models;
 using AmbustockBackend.Repositories;
 using AmbustockBackend.Service;
 using AmbustockBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -102,7 +104,11 @@ builder.Services.AddScoped<ServicioAmbulanciaService>();
 builder.Services.AddScoped<DetalleCorreoService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<RevisionService>();
-builder.Services.AddScoped<IEmailService, EmailService>(); 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ReposicionService>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -130,6 +136,9 @@ builder.Services.AddCors(options =>
         }
     });
 });
+
+builder.Services.AddDbContext<AmbustockContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("CadenaConexionAmbuStock")));
 
 
 var app = builder.Build();

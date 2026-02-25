@@ -1,11 +1,8 @@
-namespace AmbustockBackend.Dtos
+public class CreateReposicionDto
 {
-    public class CreateReposicionDto
-    {
-        public int IdCorreo { get; set; }
-        public string NombreMaterial { get; set; }
-        public int? Cantidad { get; set; }
-        public string Comentarios { get; set; }
-        public string FotoEvidenciaBase64 { get; set; }
-    }
+    public string NombreResponsable { get; set; }
+    public List<string> NombresMateriales { get; set; }
+    public int? Cantidad { get; set; }
+    public string? Comentarios { get; set; }
+    public List<string>? FotosBase64 { get; set; }  
 }
