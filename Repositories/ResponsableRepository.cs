@@ -159,6 +159,34 @@ namespace AmbustockBackend.Repositories
             await command.ExecuteNonQueryAsync();
         }
 
+        public async Task<IEnumerable<Responsable>> SearchByNombreAsync(string query)
+        {
+            var responsables = new List<Responsable>();
+
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SqlCommand(
+                @"SELECT TOP 10 Id_responsable, Nombre_Responsable, Fecha_Servicio,
+                                Id_servicio, Id_usuario, Id_Reposicion
+                FROM responsable
+                WHERE Nombre_Responsable LIKE @Query
+                ORDER BY Nombre_Responsable",
+                connection);
+
+            command.Parameters.AddWithValue("@Query", $"%{query}%");
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                responsables.Add(MapToResponsable(reader));
+            }
+
+            return responsables;
+        }
+
+
+
         private Responsable MapToResponsable(SqlDataReader r)
         {
             return new Responsable

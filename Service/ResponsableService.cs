@@ -121,6 +121,21 @@ namespace AmbustockBackend.Services
             };
         }
 
+        public async Task<IEnumerable<ResponsableDto>> SearchByNombreAsync(string query)
+        {
+            var responsables = await _repository.SearchByNombreAsync(query);
+            return responsables.Select(r => new ResponsableDto
+            {
+                IdResponsable = r.IdResponsable,
+                NombreResponsable = r.NombreResponsable,
+                FechaServicio = r.FechaServicio,
+                IdServicio = r.IdServicio,
+                IdUsuario = r.IdUsuario,
+                IdReposicion = r.IdReposicion
+            });
+        }
+
+
         public async Task DeleteAsync(int id)
         {
             await _repository.DeleteAsync(id);

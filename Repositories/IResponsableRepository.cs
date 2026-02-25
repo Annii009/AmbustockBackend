@@ -11,5 +11,6 @@ namespace AmbustockBackend.Repositories
         Task DeleteAsync(int id);
         Task<IEnumerable<Responsable>> GetByServicioIdAsync(int idServicio);
         Task<IEnumerable<Responsable>> GetByUsuarioIdAsync(int idUsuario);
+        Task<IEnumerable<Responsable>> SearchByNombreAsync(string query);
     }
 }

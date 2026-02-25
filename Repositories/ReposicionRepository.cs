@@ -139,6 +139,8 @@ namespace AmbustockBackend.Repositories
             await command.ExecuteNonQueryAsync();
         }
 
+        
+
         private Reposicion MapToReposicion(SqlDataReader r)
         {
             return new Reposicion
