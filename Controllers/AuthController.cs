@@ -21,8 +21,6 @@ namespace AmbustockBackend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            try
-            {
                 _logger.LogInformation("Intento de registro para: {Email}", registerDto.Email);
                 
                 if (string.IsNullOrWhiteSpace(registerDto.Email) || 
@@ -45,19 +43,11 @@ namespace AmbustockBackend.Controllers
 
                 _logger.LogInformation("Registro exitoso para: {Email}", registerDto.Email);
                 return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error en el registro de usuario");
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            try
-            {
                 _logger.LogInformation("Intento de login para: {Email}", loginDto.Email);
                 
                 if (string.IsNullOrWhiteSpace(loginDto.Email) || 
@@ -75,12 +65,6 @@ namespace AmbustockBackend.Controllers
 
                 _logger.LogInformation("Login exitoso para: {Email}", loginDto.Email);
                 return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error en el inicio de sesión");
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
         }
 
         [HttpGet("test")]

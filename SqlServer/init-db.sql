@@ -769,12 +769,12 @@ VALUES
 INSERT INTO usuarios (Nombre_Usuario, Rol, email, Password, Id_responsable)
 VALUES
  (N'admin', N'Administrador', N'admin@ambustock.local', N'Admin123!', 1),
- (N'jperez', N'Supervisor', N'juan.perez@ambustock.local', N'Super123!', 2),
- (N'agomez', N'Operador', N'ana.gomez@ambustock.local', N'Oper123!', 3),
+ (N'jperez', N'Sanitario', N'juan.perez@ambustock.local', N'Super123!', 2),
+ (N'agomez', N'Técnico de emergencias', N'ana.gomez@ambustock.local', N'Oper123!', 3),
  (N'lmartinez', N'Técnico de emergencias', N'luis.martinez@ambustock.local', N'Tecnico123!', 4),
  (N'cruiz', N'Sanitario', N'carlos.ruiz@ambustock.local', N'Sanitario123!', 5),
  (N'pgarcia', N'Sanitario', N'pilar.garcia@ambustock.local', N'Sanitario123!', 6),
- (N'ajimenez', N'Sanitario', N'armando.jimenez@ambustock.local', N'Sanitario123!', 7),
+ (N'ajimenez', N'Técnico de emergencias', N'armando.jimenez@ambustock.local', N'Sanitario123!', 7),
  (N'pmartinez', N'Sanitario', N'pablo.martinez@ambustock.local', N'Sanitario123!', 8),
  (N'jlrodriguez', N'Sanitario', N'joseluis.rodriguez@ambustock.local', N'Sanitario123!', 9),
  (N'jcpiedrafita', N'Sanitario', N'juancarlos.piedrafita@ambustock.local', N'Tecnico123!', 10),
