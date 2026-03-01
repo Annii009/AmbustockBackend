@@ -25,8 +25,15 @@ namespace AmbustockBackend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuarioDto>> GetById(int id)
         {
-            var usuario = await _service.GetByIdAsync(id);
-            return Ok(usuario);
+            try
+            {
+                var usuario = await _service.GetByIdAsync(id);
+                return Ok(usuario);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpGet("email/{email}")]
@@ -54,8 +61,15 @@ namespace AmbustockBackend.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<UsuarioDto>> Update(int id, [FromBody] UpdateUsuarioDto dto)
         {
-            var usuario = await _service.UpdateAsync(id, dto);
-            return Ok(usuario);
+            try
+            {
+                var usuario = await _service.UpdateAsync(id, dto);
+                return Ok(usuario);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]

@@ -127,21 +127,23 @@ namespace AmbustockBackend.Repositories
             await connection.OpenAsync();
 
             var command = new SqlCommand(
-                @"UPDATE usuarios 
-                  SET Nombre_Usuario = @NombreUsuario,
-                      Rol = @Rol,
-                      email = @Email,
-                      Password = @Password,
-                      Id_responsable = @IdResponsable,
-                      Id_Correo = @IdCorreo
-                  WHERE Id_usuario = @Id",
-                connection);
+            @"UPDATE usuarios 
+            SET Nombre_Usuario = @NombreUsuario,
+                Rol = @Rol,
+                email = @Email,
+                Password = CASE WHEN @Password = '' 
+                                THEN Password 
+                                ELSE @Password END,
+                Id_responsable = @IdResponsable,
+                Id_Correo = @IdCorreo
+            WHERE Id_usuario = @Id",
+            connection);
 
             command.Parameters.AddWithValue("@Id", usuario.IdUsuario);
             command.Parameters.AddWithValue("@NombreUsuario", usuario.NombreUsuario);
             command.Parameters.AddWithValue("@Rol", (object?)usuario.Rol ?? DBNull.Value);
             command.Parameters.AddWithValue("@Email", (object?)usuario.Email ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Password", usuario.Password);
+            command.Parameters.AddWithValue("@Password", (object?)usuario.Password ?? "");
             command.Parameters.AddWithValue("@IdResponsable", (object?)usuario.IdResponsable ?? DBNull.Value);
             command.Parameters.AddWithValue("@IdCorreo", (object?)usuario.IdCorreo ?? DBNull.Value);
 
@@ -197,10 +199,10 @@ namespace AmbustockBackend.Repositories
             return new Usuarios
             {
                 IdUsuario = r.GetInt32(r.GetOrdinal("Id_usuario")),
-                NombreUsuario = r.GetString(r.GetOrdinal("Nombre_Usuario")),
+                NombreUsuario = r.IsDBNull(r.GetOrdinal("Nombre_Usuario")) ? "" : r.GetString(r.GetOrdinal("Nombre_Usuario")),
                 Rol = r.IsDBNull(r.GetOrdinal("Rol")) ? null : r.GetString(r.GetOrdinal("Rol")),
                 Email = r.IsDBNull(r.GetOrdinal("email")) ? null : r.GetString(r.GetOrdinal("email")),
-                Password = r.GetString(r.GetOrdinal("Password")),
+                Password = r.IsDBNull(r.GetOrdinal("Password")) ? "" : r.GetString(r.GetOrdinal("Password")),
                 IdResponsable = r.IsDBNull(r.GetOrdinal("Id_responsable")) ? null : r.GetInt32(r.GetOrdinal("Id_responsable")),
                 IdCorreo = r.IsDBNull(r.GetOrdinal("Id_Correo")) ? null : r.GetInt32(r.GetOrdinal("Id_Correo"))
             };

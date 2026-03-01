@@ -100,7 +100,9 @@ namespace AmbustockBackend.Services
             usuario.NombreUsuario = dto.NombreUsuario;
             usuario.Rol = dto.Rol;
             usuario.Email = dto.Email;
-            usuario.Password = dto.Password; // En producción, hashear la contraseña
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+                usuario.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             await _repository.UpdateAsync(usuario);
 
