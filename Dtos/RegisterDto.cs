@@ -6,5 +6,8 @@ namespace AmbustockBackend.Dtos
         public string Password { get; set; } = string.Empty;
         public string? Nombre { get; set; }
         public string? Apellidos { get; set; }
+
+        public string? NombreResponsable { get; set; }
+        public string? Rol { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace AmbustockBackend.Services
                 Email = registerDto.Email,
                 Password = passwordHash,
                 NombreUsuario = registerDto.Email.Split('@')[0],
-                Rol = "Usuario",
+                Rol = registerDto.Rol ?? "Usuario",
                 IdResponsable = null,
                 IdCorreo = null
             };
