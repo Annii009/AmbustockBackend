@@ -121,8 +121,8 @@ namespace AmbustockBackend.Services
 
             material.NombreProducto = dto.NombreProducto;
             material.Cantidad = dto.Cantidad;
-            material.IdZona = dto.IdZona;
-            material.IdCajon = dto.IdCajon;
+            if (dto.IdZona.HasValue) material.IdZona = dto.IdZona.Value;
+            if (dto.IdCajon.HasValue) material.IdCajon = dto.IdCajon.Value;
 
             await _repository.UpdateAsync(material);
 
