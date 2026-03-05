@@ -77,7 +77,7 @@ namespace AmbustockBackend.Services
                 throw new Exception($"Cajón con ID {id} no encontrado");
 
             cajon.NombreCajon = dto.NombreCajon;
-            cajon.IdZona = dto.IdZona;
+            if (dto.IdZona.HasValue) cajon.IdZona = dto.IdZona.Value;
 
             await _repository.UpdateAsync(cajon);
 
