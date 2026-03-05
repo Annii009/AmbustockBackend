@@ -9,5 +9,7 @@ namespace AmbustockBackend.Models
         public Zonas Zona { get; set; }
         public int? IdCajon { get; set; }
         public Cajones Cajon { get; set; }
+        public string? FotoUrl { get; set; }
+        public string? FotoPublicId { get; set; }
     }
 }

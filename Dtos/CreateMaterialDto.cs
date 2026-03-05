@@ -6,5 +6,6 @@ namespace AmbustockBackend.Dtos
         public int Cantidad { get; set; }
         public int IdZona { get; set; }
         public int? IdCajon { get; set; }
+        
     }
 }

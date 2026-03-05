@@ -28,9 +28,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
-            {
                 cajones.Add(MapToCajon(reader));
-            }
+
             return cajones;
         }
 
@@ -50,9 +49,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
-            {
                 return MapToCajon(reader);
-            }
+
             return null;
         }
 
@@ -74,9 +72,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
-            {
                 cajones.Add(MapToCajon(reader));
-            }
+
             return cajones;
         }
 
@@ -105,16 +102,16 @@ namespace AmbustockBackend.Repositories
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
+            // Solo actualizamos el nombre — Id_zona no se toca para no
+            // violar la FK_cajones_zona
             var command = new SqlCommand(
                 @"UPDATE cajones 
-                  SET Nombre_cajon = @NombreCajon,
-                      Id_zona = @IdZona
+                  SET Nombre_cajon = @NombreCajon
                   WHERE Id_cajon = @Id",
                 connection);
 
             command.Parameters.AddWithValue("@Id", cajon.IdCajon);
             command.Parameters.AddWithValue("@NombreCajon", cajon.NombreCajon);
-            command.Parameters.AddWithValue("@IdZona", cajon.IdZona);
 
             await command.ExecuteNonQueryAsync();
         }
@@ -132,18 +129,16 @@ namespace AmbustockBackend.Repositories
 
         private Cajones MapToCajon(SqlDataReader r)
         {
-            var zona = new Zonas
-            {
-                IdZona = r.GetInt32(r.GetOrdinal("Id_zona")),
-                NombreZona = r.GetString(r.GetOrdinal("nombre_zona"))
-            };
-
             return new Cajones
             {
-                IdCajon = r.GetInt32(r.GetOrdinal("Id_cajon")),
+                IdCajon    = r.GetInt32(r.GetOrdinal("Id_cajon")),
                 NombreCajon = r.GetString(r.GetOrdinal("Nombre_cajon")),
-                IdZona = r.GetInt32(r.GetOrdinal("Id_zona")),
-                Zona = zona
+                IdZona     = r.GetInt32(r.GetOrdinal("Id_zona")),
+                Zona = new Zonas
+                {
+                    IdZona     = r.GetInt32(r.GetOrdinal("Id_zona")),
+                    NombreZona = r.GetString(r.GetOrdinal("nombre_zona"))
+                }
             };
         }
     }

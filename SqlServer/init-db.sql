@@ -34,6 +34,8 @@ CREATE TABLE materiales (
  cantidad INT NOT NULL DEFAULT 0,
  Id_zona INT NOT NULL,
  Id_cajon INT NULL,
+ foto_url NVARCHAR(500) NULL,
+ foto_public_id NVARCHAR(200) NULL,
  CONSTRAINT FK_materiales_zona FOREIGN KEY (Id_zona) REFERENCES zonas(ID_zona),
  CONSTRAINT FK_materiales_cajon FOREIGN KEY (Id_cajon) REFERENCES cajones(Id_cajon)
 );
@@ -765,24 +767,24 @@ VALUES
  (N'Rosa Triana Legua', '2026-01-06 18:20:00'),
  (N'Alejandra Ruiz Picasso', '2026-01-07 08:50:00');
 
--- 7) USUARIOS (vinculados con responsables) -- CORREGIDO: Id_responsable
+-- 7) USUARIOS
 INSERT INTO usuarios (Nombre_Usuario, Rol, email, Password, Id_responsable)
 VALUES
- (N'admin', N'Administrador', N'admin@ambustock.local', N'Admin123!', 1),
- (N'jperez', N'Sanitario', N'juan.perez@ambustock.local', N'Super123!', 2),
- (N'agomez', N'Técnico de emergencias', N'ana.gomez@ambustock.local', N'Oper123!', 3),
- (N'lmartinez', N'Técnico de emergencias', N'luis.martinez@ambustock.local', N'Tecnico123!', 4),
- (N'cruiz', N'Sanitario', N'carlos.ruiz@ambustock.local', N'Sanitario123!', 5),
- (N'pgarcia', N'Sanitario', N'pilar.garcia@ambustock.local', N'Sanitario123!', 6),
- (N'ajimenez', N'Técnico de emergencias', N'armando.jimenez@ambustock.local', N'Sanitario123!', 7),
- (N'pmartinez', N'Sanitario', N'pablo.martinez@ambustock.local', N'Sanitario123!', 8),
- (N'jlrodriguez', N'Sanitario', N'joseluis.rodriguez@ambustock.local', N'Sanitario123!', 9),
- (N'jcpiedrafita', N'Sanitario', N'juancarlos.piedrafita@ambustock.local', N'Tecnico123!', 10),
- (N'mprados', N'Técnico de emergencias', N'maricarmen.prados@ambustock.local', N'Tecnico123!', 11),
- (N'rtriana', N'Técnico de emergencias', N'rosa.triana@ambustock.local', N'Tecnico123!', 12),
- (N'aruiz', N'Técnico de emergencias', N'alejandra.ruiz@ambustock.local', N'Tecnico123!', 13);
+ (N'Administrador Sistema', N'Administrador', N'admin@ambustock.local', N'Admin123!', 1),
+ (N'Juan Pérez García', N'Sanitario', N'juan.perez@ambustock.local', N'Super123!', 2),
+ (N'Ana Gómez Ruiz', N'Técnico de emergencias', N'ana.gomez@ambustock.local', N'Oper123!', 3),
+ (N'Luis Martínez López', N'Técnico de emergencias', N'luis.martinez@ambustock.local', N'Tecnico123!', 4),
+ (N'Carlos Ruiz Hernández', N'Sanitario', N'carlos.ruiz@ambustock.local', N'Sanitario123!', 5),
+ (N'Pilar García Prado', N'Sanitario', N'pilar.garcia@ambustock.local', N'Sanitario123!', 6),
+ (N'Armando Jiménez Giménez', N'Técnico de emergencias', N'armando.jimenez@ambustock.local', N'Sanitario123!', 7),
+ (N'Pablo Martínez Oriol', N'Sanitario', N'pablo.martinez@ambustock.local', N'Sanitario123!', 8),
+ (N'José Luis Rodríguez Sancho', N'Sanitario', N'joseluis.rodriguez@ambustock.local', N'Sanitario123!', 9),
+ (N'Juan Carlos Piedrafita González', N'Sanitario', N'juancarlos.piedrafita@ambustock.local', N'Tecnico123!', 10),
+ (N'Maricarmen Prados Castillo', N'Técnico de emergencias', N'maricarmen.prados@ambustock.local', N'Tecnico123!', 11),
+ (N'Rosa Triana Legua', N'Técnico de emergencias', N'rosa.triana@ambustock.local', N'Tecnico123!', 12),
+ (N'Alejandra Ruiz Picasso', N'Técnico de emergencias', N'alejandra.ruiz@ambustock.local', N'Tecnico123!', 13);
 
--- 8) ACTUALIZAR responsables con Id_usuario -- CORREGIDO: Id_usuario e Id_responsable
+-- 8) ACTUALIZAR responsables con Id_usuario
 UPDATE responsable SET Id_usuario = 1 WHERE Id_responsable = 1;
 UPDATE responsable SET Id_usuario = 2 WHERE Id_responsable = 2;
 UPDATE responsable SET Id_usuario = 3 WHERE Id_responsable = 3;

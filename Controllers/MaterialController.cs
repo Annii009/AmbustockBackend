@@ -71,6 +71,30 @@ namespace AmbuStock.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/foto")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<MaterialDto>> SubirFoto(int id, IFormFile foto)
+        {
+            if (foto == null || foto.Length == 0)
+                return BadRequest("Debes enviar un archivo en el campo 'foto'.");
+
+            // Validar que sea una imagen
+            var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(foto.FileName).ToLowerInvariant();
+            if (!extensionesPermitidas.Contains(extension))
+                return BadRequest("Solo se permiten imágenes JPG, PNG o WebP.");
+
+            var material = await _service.SubirFotoAsync(id, foto);
+            return Ok(material);
+        }
+
+        [HttpDelete("{id}/foto")]
+        public async Task<ActionResult> EliminarFoto(int id)
+        {
+            await _service.EliminarFotoAsync(id);
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

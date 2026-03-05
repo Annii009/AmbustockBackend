@@ -21,7 +21,7 @@ namespace AmbustockBackend.Repositories
 
             var command = new SqlCommand(
                 @"SELECT m.Id_material, m.nombre_Producto, m.cantidad, m.Id_zona, m.Id_cajon,
-                         z.nombre_zona, c.Nombre_cajon
+                         z.nombre_zona, c.Nombre_cajon, m.foto_url, m.foto_public_id
                   FROM materiales m
                   INNER JOIN zonas z ON m.Id_zona = z.ID_zona
                   LEFT JOIN cajones c ON m.Id_cajon = c.Id_cajon",
@@ -29,9 +29,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
-            {
                 materiales.Add(MapToMaterial(reader));
-            }
+
             return materiales;
         }
 
@@ -42,7 +41,7 @@ namespace AmbustockBackend.Repositories
 
             var command = new SqlCommand(
                 @"SELECT m.Id_material, m.nombre_Producto, m.cantidad, m.Id_zona, m.Id_cajon,
-                         z.nombre_zona, c.Nombre_cajon
+                         z.nombre_zona, c.Nombre_cajon, m.foto_url, m.foto_public_id
                   FROM materiales m
                   INNER JOIN zonas z ON m.Id_zona = z.ID_zona
                   LEFT JOIN cajones c ON m.Id_cajon = c.Id_cajon
@@ -52,9 +51,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
-            {
                 return MapToMaterial(reader);
-            }
+
             return null;
         }
 
@@ -67,7 +65,7 @@ namespace AmbustockBackend.Repositories
 
             var command = new SqlCommand(
                 @"SELECT m.Id_material, m.nombre_Producto, m.cantidad, m.Id_zona, m.Id_cajon,
-                         z.nombre_zona, c.Nombre_cajon
+                         z.nombre_zona, c.Nombre_cajon, m.foto_url, m.foto_public_id
                   FROM materiales m
                   INNER JOIN zonas z ON m.Id_zona = z.ID_zona
                   LEFT JOIN cajones c ON m.Id_cajon = c.Id_cajon
@@ -77,9 +75,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
-            {
                 materiales.Add(MapToMaterial(reader));
-            }
+
             return materiales;
         }
 
@@ -92,7 +89,7 @@ namespace AmbustockBackend.Repositories
 
             var command = new SqlCommand(
                 @"SELECT m.Id_material, m.nombre_Producto, m.cantidad, m.Id_zona, m.Id_cajon,
-                         z.nombre_zona, c.Nombre_cajon
+                         z.nombre_zona, c.Nombre_cajon, m.foto_url, m.foto_public_id
                   FROM materiales m
                   INNER JOIN zonas z ON m.Id_zona = z.ID_zona
                   LEFT JOIN cajones c ON m.Id_cajon = c.Id_cajon
@@ -102,9 +99,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
-            {
                 materiales.Add(MapToMaterial(reader));
-            }
+
             return materiales;
         }
 
@@ -117,7 +113,7 @@ namespace AmbustockBackend.Repositories
 
             var command = new SqlCommand(
                 @"SELECT m.Id_material, m.nombre_Producto, m.cantidad, m.Id_zona, m.Id_cajon,
-                         z.nombre_zona, c.Nombre_cajon
+                         z.nombre_zona, c.Nombre_cajon, m.foto_url, m.foto_public_id
                   FROM materiales m
                   INNER JOIN zonas z ON m.Id_zona = z.ID_zona
                   LEFT JOIN cajones c ON m.Id_cajon = c.Id_cajon
@@ -127,9 +123,8 @@ namespace AmbustockBackend.Repositories
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
-            {
                 materiales.Add(MapToMaterial(reader));
-            }
+
             return materiales;
         }
 
@@ -139,15 +134,17 @@ namespace AmbustockBackend.Repositories
             await connection.OpenAsync();
 
             var command = new SqlCommand(
-                @"INSERT INTO materiales (nombre_Producto, cantidad, Id_zona, Id_cajon)
+                @"INSERT INTO materiales (nombre_Producto, cantidad, Id_zona, Id_cajon, foto_url, foto_public_id)
                   OUTPUT INSERTED.Id_material
-                  VALUES (@NombreProducto, @Cantidad, @IdZona, @IdCajon)",
+                  VALUES (@NombreProducto, @Cantidad, @IdZona, @IdCajon, @FotoUrl, @FotoPublicId)",
                 connection);
 
             command.Parameters.AddWithValue("@NombreProducto", material.NombreProducto);
             command.Parameters.AddWithValue("@Cantidad", material.Cantidad);
             command.Parameters.AddWithValue("@IdZona", material.IdZona);
-            command.Parameters.AddWithValue("@IdCajon", (object)material.IdCajon ?? DBNull.Value);
+            command.Parameters.AddWithValue("@IdCajon", (object?)material.IdCajon ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FotoUrl", (object?)material.FotoUrl ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FotoPublicId", (object?)material.FotoPublicId ?? DBNull.Value);
 
             var id = (int)await command.ExecuteScalarAsync();
             material.IdMaterial = id;
@@ -163,9 +160,11 @@ namespace AmbustockBackend.Repositories
             var command = new SqlCommand(
                 @"UPDATE materiales 
                   SET nombre_Producto = @NombreProducto, 
-                      cantidad = @Cantidad, 
-                      Id_zona = @IdZona, 
-                      Id_cajon = @IdCajon
+                      cantidad        = @Cantidad, 
+                      Id_zona         = @IdZona, 
+                      Id_cajon        = @IdCajon,
+                      foto_url        = @FotoUrl,
+                      foto_public_id  = @FotoPublicId
                   WHERE Id_material = @Id",
                 connection);
 
@@ -173,7 +172,9 @@ namespace AmbustockBackend.Repositories
             command.Parameters.AddWithValue("@NombreProducto", material.NombreProducto);
             command.Parameters.AddWithValue("@Cantidad", material.Cantidad);
             command.Parameters.AddWithValue("@IdZona", material.IdZona);
-            command.Parameters.AddWithValue("@IdCajon", (object)material.IdCajon ?? DBNull.Value);
+            command.Parameters.AddWithValue("@IdCajon", (object?)material.IdCajon ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FotoUrl", (object?)material.FotoUrl ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FotoPublicId", (object?)material.FotoPublicId ?? DBNull.Value);
 
             await command.ExecuteNonQueryAsync();
         }
@@ -193,6 +194,40 @@ namespace AmbustockBackend.Repositories
             await command.ExecuteNonQueryAsync();
         }
 
+        // Actualiza únicamente la foto de un material
+        public async Task UpdateFotoAsync(int idMaterial, string fotoUrl, string fotoPublicId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SqlCommand(
+                @"UPDATE materiales 
+                  SET foto_url = @FotoUrl, foto_public_id = @FotoPublicId
+                  WHERE Id_material = @Id",
+                connection);
+
+            command.Parameters.AddWithValue("@Id", idMaterial);
+            command.Parameters.AddWithValue("@FotoUrl", fotoUrl);
+            command.Parameters.AddWithValue("@FotoPublicId", fotoPublicId);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        // Devuelve el foto_public_id de un material (para poder borrarlo de Cloudinary)
+        public async Task<string?> GetFotoPublicIdAsync(int idMaterial)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SqlCommand(
+                "SELECT foto_public_id FROM materiales WHERE Id_material = @Id",
+                connection);
+            command.Parameters.AddWithValue("@Id", idMaterial);
+
+            var result = await command.ExecuteScalarAsync();
+            return result == DBNull.Value ? null : result?.ToString();
+        }
+
         public async Task DeleteAsync(int id)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -204,36 +239,6 @@ namespace AmbustockBackend.Repositories
             await command.ExecuteNonQueryAsync();
         }
 
-        private Materiales MapToMaterial(SqlDataReader r)
-        {
-            var zona = new Zonas
-            {
-                IdZona = r.GetInt32(r.GetOrdinal("Id_zona")),
-                NombreZona = r.GetString(r.GetOrdinal("nombre_zona"))
-            };
-
-            Cajones cajon = null;
-            if (!r.IsDBNull(r.GetOrdinal("Id_cajon")))
-            {
-                cajon = new Cajones
-                {
-                    IdCajon = r.GetInt32(r.GetOrdinal("Id_cajon")),
-                    NombreCajon = r.GetString(r.GetOrdinal("Nombre_cajon"))
-                };
-            }
-
-            return new Materiales
-            {
-                IdMaterial = r.GetInt32(r.GetOrdinal("Id_material")),
-                NombreProducto = r.GetString(r.GetOrdinal("nombre_Producto")),
-                Cantidad = r.GetInt32(r.GetOrdinal("cantidad")),
-                IdZona = r.GetInt32(r.GetOrdinal("Id_zona")),
-                IdCajon = r.IsDBNull(r.GetOrdinal("Id_cajon")) ? null : r.GetInt32(r.GetOrdinal("Id_cajon")),
-                Zona = zona,
-                Cajon = cajon
-            };
-        }
-
         public async Task<IEnumerable<Materiales>> GetByZonaSinCajonAsync(int idZona)
         {
             var materiales = new List<Materiales>();
@@ -243,36 +248,66 @@ namespace AmbustockBackend.Repositories
 
             var command = new SqlCommand(
                 @"SELECT m.Id_material, m.nombre_Producto, m.cantidad, m.Id_zona, m.Id_cajon,
-                 z.nombre_zona
-          FROM materiales m
-          INNER JOIN zonas z ON m.Id_zona = z.ID_zona
-          WHERE m.Id_zona = @IdZona AND m.Id_cajon IS NULL",
+                         z.nombre_zona, m.foto_url, m.foto_public_id
+                  FROM materiales m
+                  INNER JOIN zonas z ON m.Id_zona = z.ID_zona
+                  WHERE m.Id_zona = @IdZona AND m.Id_cajon IS NULL",
                 connection);
             command.Parameters.AddWithValue("@IdZona", idZona);
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                var zona = new Zonas
-                {
-                    IdZona = reader.GetInt32(reader.GetOrdinal("Id_zona")),
-                    NombreZona = reader.GetString(reader.GetOrdinal("nombre_zona"))
-                };
-
                 materiales.Add(new Materiales
                 {
-                    IdMaterial = reader.GetInt32(reader.GetOrdinal("Id_material")),
+                    IdMaterial    = reader.GetInt32(reader.GetOrdinal("Id_material")),
                     NombreProducto = reader.GetString(reader.GetOrdinal("nombre_Producto")),
-                    Cantidad = reader.GetInt32(reader.GetOrdinal("cantidad")),
-                    IdZona = reader.GetInt32(reader.GetOrdinal("Id_zona")),
-                    IdCajon = null,
-                    Zona = zona,
-                    Cajon = null
+                    Cantidad      = reader.GetInt32(reader.GetOrdinal("cantidad")),
+                    IdZona        = reader.GetInt32(reader.GetOrdinal("Id_zona")),
+                    IdCajon       = null,
+                    Zona          = new Zonas
+                    {
+                        IdZona     = reader.GetInt32(reader.GetOrdinal("Id_zona")),
+                        NombreZona = reader.GetString(reader.GetOrdinal("nombre_zona"))
+                    },
+                    Cajon         = null,
+                    FotoUrl       = reader.IsDBNull(reader.GetOrdinal("foto_url")) ? null : reader.GetString(reader.GetOrdinal("foto_url")),
+                    FotoPublicId  = reader.IsDBNull(reader.GetOrdinal("foto_public_id")) ? null : reader.GetString(reader.GetOrdinal("foto_public_id"))
                 });
             }
+
             return materiales;
         }
 
 
+        private Materiales MapToMaterial(SqlDataReader r)
+        {
+            Cajones? cajon = null;
+            if (!r.IsDBNull(r.GetOrdinal("Id_cajon")))
+            {
+                cajon = new Cajones
+                {
+                    IdCajon     = r.GetInt32(r.GetOrdinal("Id_cajon")),
+                    NombreCajon = r.GetString(r.GetOrdinal("Nombre_cajon"))
+                };
+            }
+
+            return new Materiales
+            {
+                IdMaterial     = r.GetInt32(r.GetOrdinal("Id_material")),
+                NombreProducto = r.GetString(r.GetOrdinal("nombre_Producto")),
+                Cantidad       = r.GetInt32(r.GetOrdinal("cantidad")),
+                IdZona         = r.GetInt32(r.GetOrdinal("Id_zona")),
+                IdCajon        = r.IsDBNull(r.GetOrdinal("Id_cajon")) ? null : r.GetInt32(r.GetOrdinal("Id_cajon")),
+                Zona = new Zonas
+                {
+                    IdZona     = r.GetInt32(r.GetOrdinal("Id_zona")),
+                    NombreZona = r.GetString(r.GetOrdinal("nombre_zona"))
+                },
+                Cajon         = cajon,
+                FotoUrl       = r.IsDBNull(r.GetOrdinal("foto_url")) ? null : r.GetString(r.GetOrdinal("foto_url")),
+                FotoPublicId  = r.IsDBNull(r.GetOrdinal("foto_public_id")) ? null : r.GetString(r.GetOrdinal("foto_public_id"))
+            };
+        }
     }
 }

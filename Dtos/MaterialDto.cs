@@ -10,5 +10,6 @@ namespace AmbustockBackend.Dtos
         public int? IdCajon { get; set; }
         public string NombreCajon { get; set; }
         public bool Revisado { get; set; }
+        public string? FotoUrl { get; set; }
     }
 }
