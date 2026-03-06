@@ -3,7 +3,7 @@ using CloudinaryDotNet.Actions;
 
 namespace AmbustockBackend.Services
 {
-    public class CloudinaryService
+    public class CloudinaryService : ICloudinaryService
     {
         private readonly Cloudinary _cloudinary;
 

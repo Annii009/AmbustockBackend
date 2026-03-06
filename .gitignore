@@ -482,3 +482,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# AmbuStock Tests - resultados y cobertura
+AmbuStock.Tests/coverage/
+AmbuStock.Tests/TestResults/
+TestResults/

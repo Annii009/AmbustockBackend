@@ -7,9 +7,9 @@ namespace AmbustockBackend.Services
     public class MaterialService
     {
         private readonly IMaterialRepository _repository;
-        private readonly CloudinaryService _cloudinary;
+        private readonly ICloudinaryService _cloudinary;
 
-        public MaterialService(IMaterialRepository repository, CloudinaryService cloudinary)
+        public MaterialService(IMaterialRepository repository, ICloudinaryService cloudinary)
         {
             _repository = repository;
             _cloudinary = cloudinary;

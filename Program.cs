@@ -110,7 +110,8 @@ builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ReposicionService>();
-builder.Services.AddSingleton<CloudinaryService>();  
+//añadida interfaz de cloudinary del service para que funcione el testing
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();  
 
 
 builder.Services.AddCors(options =>
