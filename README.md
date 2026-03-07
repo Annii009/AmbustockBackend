@@ -77,9 +77,15 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 # Generar HTML
 reportgenerator -reports:"AmbuStock.Tests/coverage/coverage.cobertura.xml" -targetdir:"AmbuStock.Tests/coverage/report" -reporttypes:Html
 
+# en mac
+~/.dotnet/tools/reportgenerator -reports:"AmbuStock.Tests/coverage/coverage.cobertura.xml" -targetdir:"AmbuStock.Tests/coverage/report" -reporttypes:Html
+
 # Abrir en el navegador
 start AmbuStock.Tests/coverage/report/index.html
 ```
+
+# en mac
+open AmbuStock.Tests/coverage/report/index.html
 
 ### Resultados de cobertura
 
