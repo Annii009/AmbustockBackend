@@ -198,12 +198,12 @@ namespace AmbustockBackend.Repositories
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
             var command = new SqlCommand(
-                @"INSERT INTO Responsable (NombreResponsable, IdUsuario, FechaServicio, IdServicio, IdReposicion)
-                OUTPUT INSERTED.IdResponsable
+                @"INSERT INTO Responsable (Nombre_Responsable, Id_usuario, Fecha_Servicio, Id_servicio, Id_Reposicion)
+                OUTPUT INSERTED.Id_responsable
                 VALUES (@NombreResponsable, @IdUsuario, NULL, NULL, NULL)",
                 connection);
             command.Parameters.AddWithValue("@NombreResponsable", responsable.NombreResponsable);
-            command.Parameters.AddWithValue("@IdUsuario", responsable.IdUsuario);
+            command.Parameters.AddWithValue("@IdUsuario", (object?)responsable.IdUsuario ?? DBNull.Value);
             var id = (int)await command.ExecuteScalarAsync();
             responsable.IdResponsable = id;
             return responsable;
