@@ -21,22 +21,19 @@ namespace AmbustockBackend.Services
 
         public async Task<AuthResponseDto?> Register(RegisterDto registerDto)
         {
-            // Verificar si el usuario ya existe
             var existingUser = await _usuarioRepository.GetByEmailAsync(registerDto.Email);
             if (existingUser != null)
             {
-                return null; // Usuario ya existe
+                return null;
             }
 
-            // Hash de la contraseña
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
 
-            // Crear nuevo usuario
             var newUser = new Usuarios
             {
                 Email = registerDto.Email,
                 Password = passwordHash,
-                NombreUsuario = registerDto.Email.Split('@')[0],
+                NombreUsuario = registerDto.NombreResponsable ?? registerDto.Email.Split('@')[0],
                 Rol = registerDto.Rol ?? "Usuario",
                 IdResponsable = null,
                 IdCorreo = null
@@ -49,7 +46,14 @@ namespace AmbustockBackend.Services
                 return null;
             }
 
-            // Generar token JWT
+            // Crear responsable asociado al usuario
+            var nuevoResponsable = new Responsable
+            {
+                NombreResponsable = registerDto.NombreResponsable ?? registerDto.Email.Split('@')[0],
+                IdUsuario = createdUser.IdUsuario
+            };
+            await _usuarioRepository.AddResponsableAsync(nuevoResponsable);
+
             string token = GenerateJwtToken(createdUser);
 
             return new AuthResponseDto
@@ -58,6 +62,7 @@ namespace AmbustockBackend.Services
                 Email = createdUser.Email,
                 UsuarioId = createdUser.IdUsuario,
                 NombreUsuario = createdUser.NombreUsuario,
+                NombreResponsable = nuevoResponsable.NombreResponsable,
                 Rol = createdUser.Rol,
                 Message = "Usuario registrado correctamente"
             };
@@ -65,28 +70,23 @@ namespace AmbustockBackend.Services
 
         public async Task<AuthResponseDto?> Login(LoginDto loginDto)
         {
-            // Buscar usuario por email
             var user = await _usuarioRepository.GetByEmailAsync(loginDto.Email);
             
             if (user == null)
             {
-                return null; // Usuario no encontrado
+                return null;
             }
 
-            // Verificar contraseña
             bool isPasswordValid = false;
             
             try
             {
-                // Intentar verificar con BCrypt (contraseñas nuevas hasheadas)
                 isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password);
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                // Si falla BCrypt, comparar contraseña plana (contraseñas viejas sin hashear)
                 isPasswordValid = user.Password == loginDto.Password;
                 
-                // OPCIONAL: Actualizar a BCrypt si la contraseña es correcta
                 if (isPasswordValid)
                 {
                     user.Password = BCrypt.Net.BCrypt.HashPassword(loginDto.Password);
@@ -96,10 +96,9 @@ namespace AmbustockBackend.Services
             
             if (!isPasswordValid)
             {
-                return null; // Contraseña incorrecta
+                return null;
             }
 
-            // Generar token JWT
             string token = GenerateJwtToken(user);
 
             return new AuthResponseDto

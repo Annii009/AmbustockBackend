@@ -12,6 +12,7 @@ namespace AmbustockBackend.Repositories
         Task<Usuarios?> GetByEmailAsync(string email);
         Task<Usuarios?> GetByEmailAndPasswordAsync(string email, string password);
         Task<IEnumerable<Usuarios>> GetByRolAsync(string rol);
+        Task<Responsable> AddResponsableAsync(Responsable responsable);
 
     }
 }

@@ -193,6 +193,22 @@ namespace AmbustockBackend.Repositories
             return usuarios;
         }
 
+        public async Task<Responsable> AddResponsableAsync(Responsable responsable)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = new SqlCommand(
+                @"INSERT INTO Responsable (NombreResponsable, IdUsuario, FechaServicio, IdServicio, IdReposicion)
+                OUTPUT INSERTED.IdResponsable
+                VALUES (@NombreResponsable, @IdUsuario, NULL, NULL, NULL)",
+                connection);
+            command.Parameters.AddWithValue("@NombreResponsable", responsable.NombreResponsable);
+            command.Parameters.AddWithValue("@IdUsuario", responsable.IdUsuario);
+            var id = (int)await command.ExecuteScalarAsync();
+            responsable.IdResponsable = id;
+            return responsable;
+        }
+
 
         private Usuarios MapToUsuario(SqlDataReader r)
         {
