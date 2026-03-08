@@ -6,6 +6,7 @@ namespace AmbustockBackend.Dtos
         public string Email { get; set; } = string.Empty;
         public int UsuarioId { get; set; }
         public string NombreUsuario { get; set; } = string.Empty;
+        public string? NombreResponsable { get; set; }
         public string Rol { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
     }
